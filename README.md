@@ -1,11 +1,11 @@
 # back-end
 *_스폐셜티 - Backend AI Blockchain 연동 플랫폼 (Flask 및 Web)_*
 
-*_[접속방법]_*  
+# [접속방법]  
 https://coffeeground.run.goorm.io/
 
 
-*_[Python Flask 기반 추가되는 라이브러리 정보]_*
+# [Python Flask 기반 추가되는 라이브러리 정보]  
 
 1) JWT(Json Web Token) 이용하여 인증 방식 적용을 위한 라이브러리
 - pip install flask_jwt
@@ -24,7 +24,7 @@ https://coffeeground.run.goorm.io/
 - pip install apscheduler
 
 
-*_[DB 테이블 정보]_*
+# [DB 테이블 정보]  
 1) 유저정보
 - CREATE TABLE `USER_INFO` (  
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,  
@@ -74,5 +74,5 @@ https://coffeeground.run.goorm.io/
   PRIMARY KEY (`Idx`)  
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;  
 
-*_[웹플랫폼 html,css 참조]_*
+# [웹플랫폼 html,css 참조]  
 - jui 기반 html, css, chart 참조하여 만들었습니다. (MIT 라이센스, 누구나 활용가능)
