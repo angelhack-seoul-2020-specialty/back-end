@@ -1,0 +1,767 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<META charset="UTF-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="static/lib/jui/css/ui.min.css" />
+<link rel="stylesheet" href="static/lib/jui/css/ui-jennifer.min.css" />
+<link rel="stylesheet" href="static/lib/jui/css/grid.min.css" />
+<link rel="stylesheet" href="static/lib/jui/css/grid-jennifer.min.css" />
+<script type="text/javascript" src="static/lib/jquery-1.8.0.min.js" ></script>
+<script type="text/javascript" src="static/lib/jui/js/core.min.js" ></script>
+<script type="text/javascript" src="static/lib/jui/js/ui.min.js" ></script>
+<script type="text/javascript" src="static/lib/jui/js/grid.min.js" ></script>
+<!--<script type="text/javascript" src="static/lib/jui/js/chart.min.js" ></script>-->
+<script type="text/javascript" src="static/lib/jui/js/chart.js?ver=1" ></script>
+<link rel="stylesheet" href="static/coffeepark_style.css" />
+
+<script>
+
+
+
+
+function windowResize() {
+    var container = $('.jui');
+    var $panel = $(".panel > .body");
+
+    $(container).height(740);
+    $('#weather-map').height(670);
+}
+
+jui.ready([ "util.base", "util.time", "chart.builder", "ui.combo" ], function(_, time, builder, combo) {
+    var weatherMapData = [{
+        id: "서울",
+        temperature: 25,
+        weather: "cloudy",
+        dx: 10
+    }, {
+        id: "인천",
+        temperature: 28,
+        weather: "sunny",
+        dx: -50,
+        dy: -25
+    }
+    ];
+
+    var englishProvincesData = {
+        '서울': 'Seoul',
+        '인천': 'Incheon'        
+    };
+    
+    var englishProvincesData2 = {        
+        '서울': '100',
+        '인천': '200'        
+    };
+    
+    var englishProvincesData3 = {
+        '서울': '100',
+        '인천': '200'        
+    };
+    
+    // 지역별 정보
+    getdataProvinceAll();
+    // 예측
+    getdataProphet();
+    // 블록체인
+    getdataBlockChain();
+    windowResize();
+    addComboboxData();
+    
+     function generateProvincesTemperature() {
+                
+        var data = [];
+              
+          Object.keys(englishProvincesData).map(function(key){
+            data.push({
+                name: englishProvincesData[key],
+                Provide: englishProvincesData2[key],
+                Demand: englishProvincesData3[key],
+            });
+        });
+      
+        return data;
+    }
+    
+    function generateAirQualityData(data) {
+        var jsonarray = [];
+        jsonarray = eval(data);
+        console.log(typeof jsonarray)
+        
+        var currentTime = new Date().getTime();
+        var startTime = currentTime - 1000 * 60 * 5; // 5분전 스타트
+
+        var data =[];
+        
+        j = startTime
+        console.log("block chain length")
+        console.log(jsonarray.length)
+        
+        for (var i = jsonarray.length-1; i > -1  ; i--) {
+            var gogo = jsonarray[i]
+            var tranqty = gogo["TranQty"]
+            console.log("start gogo")
+            console.log(i)
+            console.log(gogo["TranQty"])
+            console.log("end gogo")
+            
+            //var TranQty = jsonarray[i].TranQty;
+            //console.log(TranQty)
+            
+            data.push({
+                date: j,
+                value: tranqty,
+            })
+            
+            j+= 1000*60
+        }
+        
+        /*
+        for (var i = startTime; i <= currentTime; i+= 1000*60) {
+            var trend = jsonarray[i].TranQty;
+            data.push({
+                date: i,
+                value: Math.floor(Math.random() * 40)
+            })
+        }
+        */
+        return data;
+    }
+    
+    function getdataBlockChain(){
+        var jsonarray = [];
+        
+       /*블록체인 모니터링 상태 가져오기*/
+        
+        $.ajax({
+          type: "GET",
+          url: "../api/monitor/blockchain",
+          data: "",
+          dataType: "text",
+          success: function(data) {
+            console.log(data)
+            jsonarray = eval(data);
+            console.log(typeof jsonarray)
+
+            for(var i = 0; i < jsonarray.length; i++)
+            {
+              var DateTime = jsonarray[i].DateTime;
+              var TranQty = jsonarray[i].TranQty;
+              console.log(DateTime)
+              console.log(TranQty)
+            }
+              
+            var airQualityLine = builder("#air-quality-line", {
+                    padding: {
+                        left: 30,
+                        right: 20,
+                        top: 10,
+                        bottom: 20
+                    },
+                    axis : [{
+                        x : {
+                            type : "date",
+                            domain : [ new Date() - 1000 * 60 * 5, new Date() ],
+                            interval : 1, // 8 hours
+                            realtime : "minutes",
+                            format : "hh:mm",
+                            key: "date",
+                            line : true
+                        },
+                        y : {
+                            type : "range",
+                            domain : [ 0, 20 ],
+                            step : 4,
+                            line : true
+                        },
+                        data: generateAirQualityData(data),
+                        area : {
+                            width: "100%"
+                        }
+                    }],
+                    brush: [{
+                        type : "line",
+                        target : [ "value" ],
+                        colors : [ 3 ]
+                    }, {
+                        type : "scatter",
+                        target : [ "value" ],
+                        colors : [ 3 ],
+                        hide : true
+                    }],
+                    widget : [
+                        { type : "tooltip", brush: 1 }
+                    ]
+            });
+            
+            // 분당 새로운 데이터를 가져온다
+            /*
+            setInterval(function() {
+                airQualityLine.axis(0).updateGrid("x", {
+                    domain : [new Date() - 1000 * 60 * 5, new Date()]
+                });
+                airQualityLine.axis(0).update(updateData(airQualityLine.axis(0).data));
+            }, 1000*60);
+            */  
+          }
+            
+        });
+    }
+    
+    function getdataProphet(){
+        
+        var jsonarray = [];
+        
+       /*수요, 공급 에이 아이 예측하기*/
+        
+        $.ajax({
+          type: "GET",
+          url: "../api/monitor/prediction",
+          data: "",
+          dataType: "text",
+          success: function(data) {
+            console.log(data)
+            jsonarray = eval(data);
+            console.log(typeof jsonarray)
+
+            for(var i = 0; i < jsonarray.length; i++)
+            {
+              var ds = jsonarray[i].ds;
+              var trend = jsonarray[i].trend;
+              console.log(ds)
+              console.log(trend)
+            }
+            
+            var temperatureLine = builder("#temperature-line", {
+                padding: {
+                    left: 30,
+                    right: 30,
+                    top: 10,
+                    bottom: 20
+                },
+                axis : [{
+                    x : {
+                        type : "date",
+                        domain : [ detailChartConfig.startDate, detailChartConfig.endDate ],
+                        interval : 1000 * 60 * 60 * 24, // 8 hours
+                        format : "MM-dd",
+                        key: "date"
+                    },
+                    y : {
+                        type : "range",
+                        domain : [ 0, 2000 ],
+                        step : 3,
+                        line : true
+                    },
+                    data : generateDetailChartData(detailChartConfig.startDate, detailChartConfig.endDate,
+                                                   detailChartConfig.interval, 0, 2000, data),
+                    area : {
+                        width: "47%"
+                    }
+                }, {
+                    extend : 0,
+                    area: {
+                        width: "47%",
+                        x: "53%"
+                    },
+                    y : {
+                        type : "range",
+                        domain : [ 0, 2000 ],
+                        step : 3,
+                        orient : "right"
+                    },
+                    data : generateDetailChartData2(detailChartConfig.startDate, detailChartConfig.endDate,
+                                                   detailChartConfig.interval, 0, 2000, data),
+                }],
+                brush : [{
+                    type : "line",
+                    target : "value",
+                    animate : true,
+                    colors : [ 2 ]
+                },{
+                    type : "line",
+                    target : "value",
+                    animate : true,
+                    colors : [ 2 ],
+                    axis: 1
+                },{
+                    type : "scatter",
+                    target : "value",
+                    hide : true,
+                    colors : [ 2 ]
+                },{
+                    type : "scatter",
+                    target : "value",
+                    hide : true,
+                    colors : [ 2 ],
+                    axis: 1
+                }],
+                widget : [{
+                    type : "tooltip",
+                    brush:[ 2, 3 ],
+                    orient : "bottom"
+                }]
+            });
+          }
+        });
+    }
+    
+    function getdataProvinceAll(){
+        var jsonarray = [];
+        var seoul_provide_amount = 0
+        var seoul_demand_amount = 0
+        var incheon_provide_amount = 0
+        var incheon_demand_amount = 0        
+        //var englishProvincesData2 = {}
+        //var englishProvincesData3 = {}
+        
+       /*서울 인천 데이터 가져오기*/
+        
+        $.ajax({
+          type: "GET",
+          url: "../api/monitor/province-amount",
+          data: "random",
+          dataType: "text",
+          success: function(data) {
+            console.log(data)
+            jsonarray = eval(data);
+            console.log(typeof jsonarray)
+
+            for(var i = 0; i < jsonarray.length; i++)
+            {
+              var Province = jsonarray[i].Province;
+              var UserType = jsonarray[i].UserType;
+              var amount = jsonarray[i].amount; 
+              if(Province == "Seoul" && UserType == "Provide")
+                  seoul_provide_amount = amount;
+              if(Province == "Seoul" && UserType == "Demand")
+                  seoul_demand_amount = amount;
+             if(Province == "Incheon" && UserType == "Demand")
+                  incheon_demand_amount = amount;
+            if(Province == "Incheon" && UserType == "Provide")
+                  incheon_provide_amount = amount;
+                
+              englishProvincesData2 =  {'서울': seoul_provide_amount, '인천': incheon_provide_amount };   
+              englishProvincesData3 =  {'서울': seoul_demand_amount, '인천': incheon_demand_amount }; 
+              
+              weatherMapData = [{
+                    id: "서울",
+                    temperature: seoul_provide_amount +"/"+ seoul_demand_amount,
+                    weather: "",
+                    dx: 10
+                }, {
+                    id: "인천",
+                    temperature: incheon_provide_amount +"/"+ incheon_demand_amount,
+                    weather: "",
+                    dx: -50,
+                    dy: -25
+                }
+                ];
+            }
+            
+            
+            console.log(seoul_provide_amount);
+
+            console.log(incheon_provide_amount);            
+            
+              var weatherMap = builder('#weather-map', {
+                    padding : 0,
+                    axis : [{
+                        map : {
+                            path : "static/lib/jui/img/map/korea-500x650.svg",
+                            width : 500,
+                            height : 650,
+                            viewX : -20,
+                            viewY : -20
+                        },
+                        data : weatherMapData
+                    }],
+                    brush : [{
+                        type : "map.weather",
+                        format : function(id) {
+                            return englishProvincesData[id];
+                        }
+                    }],
+                    style : {
+                        mapPathBackgroundColor : "white",
+                        mapPathBorderColor : "#a9a9a9"
+                    }
+                });
+              
+            var weatherBar = builder("#weather-bar", {
+                            padding: {
+                                left: 0,
+                                right: 25,
+                                top: 20,
+                                bottom: 50
+                            },
+                            axis : {
+                                x : {
+                                    type : "block",
+                                    domain : "name",
+                                    line : true,
+                                    textRotate : -10
+                                },
+                                y : {
+                                    type : "range",
+                                    domain : [ 0, 1500 ],
+                                    step : 2,
+                                    line : true,
+                                    min: 0,
+                                    orient : "right"
+                                },
+                                data: generateProvincesTemperature()
+                            },
+                            brush : {
+                                type : "column",
+                                target : [ "Provide", "Demand" ],
+                                colors : [ 4, 5 ]
+                            },
+                            widget : [
+                                { type : "tooltip", all : true },
+                                { type : "legend", filter : true }
+                            ]
+                        });
+          }
+        });
+    }
+
+   
+
+    function getDateString(numOfAddDate) {
+        if (typeof numOfAddDate === 'undefined') numOfAddDate = 0;
+
+        var date = getDateFromToday(numOfAddDate);
+        var parsedDate = (date.getMonth() + 1) +
+                         '/' +
+                         date.getDate();
+        var suffix = numOfAddDate == 0 ? ' (Today)' : '';
+
+        return parsedDate + suffix;
+    }
+
+    function getDateFromToday(numOfAddDate) {
+        if (typeof numOfAddDate === 'undefined') numOfAddDate = 0;
+
+        var now = new Date();
+        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var calculatedDate = new Date(today.getTime() + (1000 * 60 * 60 * 24) * numOfAddDate);
+
+        return calculatedDate;
+    }
+    
+    
+    var detailChartConfig = {
+        startDate: getDateFromToday(0),
+        endDate: getDateFromToday(7),
+        interval: 1000 * 60 * 60 * 24
+    };
+    
+    // 수요
+    function generateDetailChartData(startDate, endDate, interval, valueStart, valueEnd, data) {
+        var jsonarray = [];
+        jsonarray = eval(data);
+        console.log(typeof jsonarray)
+        var data = [];
+        var date = [getDateFromToday(0), getDateFromToday(1), getDateFromToday(2), getDateFromToday(3), getDateFromToday(4), getDateFromToday(5), getDateFromToday(6), getDateFromToday(7)];
+        for(var i = 0; i <= date.length; i++) {
+            var trend = jsonarray[i].trend;
+            console.log(trend)
+            data.push({
+                date : date[i],                
+                value : trend,
+            });
+        }
+
+        return data;
+    }
+        
+      // 수요
+      function generateDetailChartData2(startDate, endDate, interval, valueStart, valueEnd, data) {
+          var jsonarray = [];
+         jsonarray = eval(data);
+         console.log(typeof jsonarray)
+         var data = [];
+         var date = [getDateFromToday(0), getDateFromToday(1), getDateFromToday(2), getDateFromToday(3), getDateFromToday(4), getDateFromToday(5), getDateFromToday(6), getDateFromToday(7)];
+        for(var i = 0; i <= date.length; i++) {
+            
+            var trend = jsonarray[i].trend2_demand;
+            console.log(trend)
+
+            data.push({
+                date : date[i],                
+                value : trend,
+            });                        
+        }
+
+        return data;
+    }
+
+    
+
+    function addComboboxData() {
+
+        var combobox = $('#province-combobox > ul');
+
+        Object.keys(englishProvincesData).map(function(key, i) {
+            combobox.append('<li value=' + i + '>' +
+                            englishProvincesData[key] +
+                            '</li>');
+        });
+    }
+
+    var combobox = combo("#province-combobox", {
+        width: 150
+    });
+
+    
+
+    function updateData(currentData) {
+        currentData.shift();
+        
+        console.log(latestDate + 1000*60)
+        
+        var latestDate = currentData[currentData.length - 1].date;
+        currentData.push({
+            date: latestDate + 1000*60,
+            value: 30,
+        })
+
+        return currentData;
+    }
+    
+    /*
+    var airQualityLine = builder("#air-quality-line", {
+        padding: {
+            left: 30,
+            right: 20,
+            top: 10,
+            bottom: 20
+        },
+        axis : [{
+            x : {
+                type : "date",
+                domain : [ new Date() - 1000 * 60 * 5, new Date() ],
+                interval : 1, // 8 hours
+                realtime : "minutes",
+                format : "hh:mm",
+                key: "date",
+                line : true
+            },
+            y : {
+                type : "range",
+                domain : [ 0, 100 ],
+                step : 4,
+                line : true
+            },
+            data: generateAirQualityData(),
+            area : {
+                width: "100%"
+            }
+        }],
+        brush: [{
+            type : "line",
+            target : [ "value" ],
+            colors : [ 3 ]
+        }, {
+            type : "scatter",
+            target : [ "value" ],
+            colors : [ 3 ],
+            hide : true
+        }],
+        widget : [
+            { type : "tooltip", brush: 1 }
+        ]
+    });
+    
+    
+    */
+    
+    
+
+    _.resize(windowResize, 100);
+});
+</script>
+</head>
+<body class="jui">
+    <div class="row">
+        <div class="col left">
+            <div class="panel">
+                <div class="head">
+                    <strong>커피박 공급 / 수요 Map</strong>
+                </div>
+                <div class="body">
+                    <div id="weather-map"></div>
+                </div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="row">
+                <div class="panel">
+                    <div class="head">
+                        <strong>커피박 공급 / 수요 Chart</strong>
+                    </div>
+                    <div class="body" >
+                        <div id="weather-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="head">
+                   <strong>커비팍 공급 / 수요 요청 정보</strong>
+
+                    <div style="float: right;">
+                        <div id="province-combobox" class="combo" style="display:none">
+                            <a class="btn small">Select...</a>
+                            <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                              <ul>
+
+                              </ul>
+                        </div>
+                        <select id="province-drop">
+                            <option value="Seoul">Seoul</option>
+                            <option value="Incheon">Incheon</option>                            
+                        </select>
+                    </div>
+                </div>
+                <div class="body">
+                    <section>
+                        <span class="h6">한달 기준 데이터</span>
+                        <table class="table classic" >
+                            <thead>
+                                <tr>
+                                    <th>날짜</th><th>업체</th><th>공급/수요</th><th>Kg</th><th>지역</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody id="coffeepark_amount" >
+                            </tbody>
+                        </table>
+                    </section>
+                    <section>
+                        <span class="h6">AI 커피박 공급 / 수요 예측</span>
+                        <div id="temperature-line"></div>
+                    </section>
+                    <section>
+                        <span class="h6">실시간 블록체인 생성 모니터링</span>
+                        <div id="air-quality-line"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+    <script>
+
+// 지역별 수요/공급 데이터 첨부
+function getdataProvince(infoId_)
+{
+    infoId = infoId_;
+    $.ajax({
+      type: "GET",
+      url: "../api/monitor/province-amount",
+      data: "random",
+      dataType: "text",
+      success: function(data) {
+        console.log(data)
+        var jsonarray = eval(data);
+        console.log(typeof jsonarray)
+
+        for(var i = 0; i < jsonarray.length; i++)
+        {
+          var Province = jsonarray[i].Province;
+          var UserType = jsonarray[i].UserType;
+          var amount = jsonarray[i].amount; 
+        }
+      }
+    });
+}
+
+        
+$("#province-drop").change(function () {
+    var end = this.value;
+    var firstDropVal = $('#province-drop').val();
+    dataSend2(firstDropVal);
+});
+// 수요 / 공급 리스ㅡ 보여주기
+function dataSend2(firstDropVal)
+{        
+    $.ajax({
+      type: "GET",
+      url: "../api/monitor/amount",
+      data: "province="+firstDropVal,
+      dataType: "text",
+      success: function(data) {
+        console.log(data)
+        var jsonarray = eval(data);
+        console.log(typeof jsonarray)
+
+        // 초기화 해야함
+        //$("#coffeepark_amount").empty();
+        
+        $('#coffeepark_amount').empty();
+        for(var i = 0; i < jsonarray.length; i++)
+        {
+          var UserId = jsonarray[i].UserId;
+          var UserName = jsonarray[i].UserName;
+          var UserType = jsonarray[i].UserType; 
+          var amount = jsonarray[i].amount;
+          var timestamp = jsonarray[i].timestamp;
+          var Province = jsonarray[i].Province;
+            
+            
+          $("#coffeepark_amount").append("<tr ><td onclick=dataSend('');><i class='icon-stop' style='font-size:8.5px;color:#fb32ff;'></i>"
+           +timestamp+"</td><td>"+UserName+"</td><td>"+UserType+"</td><td>"+amount+"</td><td>"+Province+"</td></tr>");
+        }
+      }
+    });
+}
+
+    var firstDropVal = $('#province-drop').val();
+    dataSend2(firstDropVal);
+    </script>
+    <style type="text/css">
+
+    
+        
+table {
+    width: 100%;
+    border-spacing: 0;
+}
+
+thead, tbody, tr, th, td { display: block; }
+
+thead tr {
+    /* fallback */
+    width: 97%;
+    /* minus scroll bar width */
+    
+    width: -webkit-calc(100% - 16px);
+    width:    -moz-calc(100% - 16px);
+    width:         calc(100% - 16px);
+    
+}
+
+tr:after {  /* clearing float */
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+tbody {
+    height: 70px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+ tbody td{
+    width: 18%;  /* 19% is less than (100% / 5 cols) = 20% */
+    float: left;
+}
+thead th {
+    width: 18%;  /* 19% is less than (100% / 5 cols) = 20% */
+    float: left;
+}
+    </style>
+</html>
