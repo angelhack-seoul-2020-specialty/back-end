@@ -42,23 +42,17 @@ import pickle
 from apscheduler.schedulers.background import BackgroundScheduler
 
 application = Flask("coffeepark")
-
-
-
 application.config['JWT_TOKEN_LOCATION'] = ['cookies']
-
-application.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+application.config['JWT_ACCESS_COOKIE_PATH'] = '/api'
 application.config['JWT_REFRESH_COOKIE_PATH'] = '/'
-
 application.config['JWT_COOKIE_CSRF_PROTECT'] = False
-
 application.config['JWT_SECRET_KEY'] = 'coffeepark' 
-
-application.config['SESSION_COOKIE_HTTPONLY'] = False
+application.config['SESSION_COOKIE_HTTPONLY'] = False 
 application.config['CSFR_COOKIE_HTTPONLY'] = False
 
-application.config['JWT_COOKIE_SECURE'] = False
-application.config['PERMANENT_SESSION_LIFETIME'] = 2678400
+#application.config['JWT_COOKIE_SECURE'] = False
+#application.config['PERMANENT_SESSION_LIFETIME'] = 2678400
+#application.config.update(SESSION_COOKIE_SECURE=False,SESSION_COOKIE_HTTPONLY=False,)
 
 api = Api(application)
 
@@ -214,18 +208,44 @@ def login():
     finally:
         conn.close()    
     
-    access_token = create_access_token(identity=email)
-    refresh_token = create_refresh_token(identity=email)
+    # 이렇게 하시면 될 듯!!
+    # 전화 되나요?
+     # 전화해유~~
+            
+    KST = timezone('Asia/Seoul')
+    now = datetime.utcnow()
+    today_dt = utc.localize(now).astimezone(KST) 
+    
+    application.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+    )
+    
+    expires_delta = timedelta(days=1)
+    access_token = create_access_token(identity=email, expires_delta=expires_delta )
+    refresh_token = create_refresh_token(identity=email, expires_delta=expires_delta )
 
     resp = jsonify({'login': True})
-    #application.config['SESSION_COOKIE_HTTPONLY'] = False
-    set_access_cookies(resp, access_token) 
-    #resp.set_cookie('HttpOnly','False')
-    set_refresh_cookies(resp, refresh_token)
-    #resp.set_cookie('HttpOnly','False')
+  
+    #set_access_cookies(resp, access_token) 
+    #set_refresh_cookies(resp, refresh_token)
+    
+    resp.set_cookie(key="access_token_cookie", value=access_token, httponly=False)
+
     print(resp.headers)
     print(resp.json)
     print(access_token)
+    
+    """
+    return { 'statusCode': 200,
+             'headers': {
+             'Access-Control-Allow-Headers': 'Content-Type',
+             'Access-Control-Allow-Origin': '*',
+             'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+           },
+           'body': resp.json
+           };
+    """    
     return resp, 200
 
 def getUserType(Userid) :
@@ -276,6 +296,8 @@ def insertCoffeePark():
         conn.close()
     
     #블록체인 insert
+    QtyKg = int(round(QtyKg, 0))
+    print(QtyKg)
     data = {'cafeId':Userid,'amount':QtyKg}
     url = "http://101.101.209.10:3000/coffee-ground"
     res = requests.post(url, data = data)
