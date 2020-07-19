@@ -17,7 +17,7 @@ https://coffeeground.run.goorm.io/
 3) Mysql 연동을 위한 라이브러리
 - pip install pymysql
 
-4) 시계열 데이터 AI 수요/공급 예측을 위한 Facebook 신러닝 라이브러리
+4) 시계열 데이터 AI 수요/공급 예측을 위한 Facebook 머신러닝 라이브러리
 - pip install fbprophet
 
 5) 블록체인 1분단위로 트랜잭션 모니터링을 위한 스케줄러 라이브러리
