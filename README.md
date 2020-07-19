@@ -26,7 +26,7 @@ https://coffeeground.run.goorm.io/
 
 [DB 테이블 정보]
 1) 유저정보
-CREATE TABLE `USER_INFO` (
+- CREATE TABLE `USER_INFO` (
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `Userid` varchar(50) NOT NULL, -- 사용자ID
   `UserType` varchar(20) NOT NULL, -- 사용자타입
@@ -36,7 +36,7 @@ CREATE TABLE `USER_INFO` (
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 
 2) 뱃지정보
-CREATE TABLE `BADGE_INFO` (
+- CREATE TABLE `BADGE_INFO` (
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `Name` varchar(100) NOT NULL, -- 뱃지명
   `Way` varchar(100) NOT NULL, --뱃지획득 방법
@@ -46,7 +46,7 @@ CREATE TABLE `BADGE_INFO` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 3) 커피박 로그정보
-CREATE TABLE `COFFEEPARK_LOG` (
+- CREATE TABLE `COFFEEPARK_LOG` (
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `Userid` varchar(50) NOT NULL, --사용자ID
   `UserType` varchar(30) NOT NULL DEFAULT '', --사용자타입
@@ -57,7 +57,7 @@ CREATE TABLE `COFFEEPARK_LOG` (
 ) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8;
 
 4) 블록체인 로그정보
-CREATE TABLE `BLOCKCHAIN_LOG` (
+- CREATE TABLE `BLOCKCHAIN_LOG` (
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `TranQty` int(11) DEFAULT NULL, --트랜잭션 발생수
   `Insert_Dt` datetime DEFAULT NULL, --블록체인 트랜잭션 발생수 수집일시
@@ -65,7 +65,7 @@ CREATE TABLE `BLOCKCHAIN_LOG` (
 ) ENGINE=InnoDB AUTO_INCREMENT=622 DEFAULT CHARSET=utf8;
 
 5) 뱃지 로그정보
-CREATE TABLE `BADGE_LOG` (
+- CREATE TABLE `BADGE_LOG` (
   `Idx` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `Userid` varchar(50) NOT NULL, --사용자ID
   `UserType` varchar(30) NOT NULL DEFAULT '', --사용자타입
