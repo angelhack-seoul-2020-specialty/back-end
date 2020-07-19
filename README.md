@@ -9,6 +9,10 @@ http://coffeeground.run.goorm.io/api/monitor/ai-creation
 페이스북 프로핏(Prophet) 시계열 예측 라이브러리를 통해서 자동으로 현재 추세를 학습하여 1주일치 에측할수 있는 모델을 pickle 파일 형태로 저장됨  
 모니터링에서 해당 pickle 로딩하여 커피박 수요/공급 일주일 예측이 가능함
 
+# [블록체인(BlockChain) 트랜잭션 명시적 확인 방법(클레이튼 )]  
+https://baobab.scope.klaytn.com/account/0x3465bF97C0F71d025cdBE65EA074360b80220091?tabId=txList  
+실시간으로 커피박 기부 트랜잭션을 확인할수 있음
+
 # [Python Flask 기반 추가되는 라이브러리 정보]  
 
 1) JWT(Json Web Token) 이용하여 인증 방식 적용을 위한 라이브러리
