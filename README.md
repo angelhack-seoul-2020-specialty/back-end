@@ -8,12 +8,20 @@ https://coffeeground.run.goorm.io/
 [Python Flask 기반 추가되는 라이브러리 정보]
 
 1) JWT(Json Web Token) 이용하여 인증 방식 적용을 위한 라이브러리
-pip install flask_jwt_extended
+- pip install flask_jwt
+- pip install flask_jwt_extended
 
 2) 타임존 설정을 위한 라이브러리
-pip install pytz
+- pip install pytz
 
-3)
+3) Mysql 연동을 위한 라이브러리
+- pip install pymysql
+
+4) 시계열 데이터 AI 수요/공급 예측을 위한 Facebook 미신러닝 라이브러리
+- pip install fbprophet
+
+5) 블록체인 1분단위로 트랜잭션 모니터링을 위한 스케줄러 라이브러리
+- pip install apscheduler
 
 
 [DB 테이블 정보]
