@@ -6,7 +6,7 @@ from flask import request
 from flask import jsonify
 import sys
 import json
-
+import math
 
 from urllib import parse
 import urllib.request
@@ -296,7 +296,8 @@ def insertCoffeePark():
         conn.close()
     
     #블록체인 insert
-    QtyKg = int(round(QtyKg, 0))
+    #QtyKg = int(round(QtyKg))
+    QtyKg = int(math.trunc(float(QtyKg)))
     print(QtyKg)
     data = {'cafeId':Userid,'amount':QtyKg}
     url = "http://101.101.209.10:3000/coffee-ground"
