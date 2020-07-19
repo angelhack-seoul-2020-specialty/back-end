@@ -1,9 +1,19 @@
 # back-end
-스폐셜티 Backend AI Blockchain 연동 플랫폼 (Flask 및 Web) 
+스폐셜티 - Backend AI Blockchain 연동 플랫폼 (Flask 및 Web) 
+
+[접속방법]
+https://coffeeground.run.goorm.io/
 
 
 [Python Flask 기반 추가되는 라이브러리 정보]
--
+
+1) JWT(Json Web Token) 이용하여 인증 방식 적용을 위한 라이브러리
+pip install flask_jwt_extended
+
+2) 타임존 설정을 위한 라이브러리
+pip install pytz
+
+3)
 
 
 [DB 테이블 정보]
